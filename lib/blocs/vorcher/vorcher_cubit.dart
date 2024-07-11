@@ -14,7 +14,7 @@ class VorcherCubit extends Cubit<VorcherState> {
   
   Future<void> getVoucher() async{
     try{
-      final response = await dio.get("http://localhost:9999/booking/api/getVorcher");
+      final response = await dio.get("http://10.0.2.2:9999/booking/api/getVorcher");
       if(response.statusCode == 200) {
         List<Vorcher> data = (response.data as List).map((json) => Vorcher.fromJson(json)).toList();
         emit(VorcherLoaded(data));

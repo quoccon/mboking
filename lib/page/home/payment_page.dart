@@ -7,6 +7,7 @@ import 'package:mbooking/blocs/booking/booking_cubit.dart';
 import 'package:mbooking/blocs/vorcher/vorcher_cubit.dart';
 import 'package:mbooking/model/booking.dart';
 import 'package:mbooking/model/movies.dart';
+import 'package:mbooking/page/home/vorcher.dart';
 import 'package:mbooking/page/payment/my_ticket.dart';
 
 import '../../model/auth.dart';
@@ -123,7 +124,50 @@ class _PaymentPageState extends State<PaymentPage> {
     final String formatDate =
         DateFormat('dd.MM.yyyy').format(widget.selectDate);
 
-    return BlocBuilder<BookingCubit, BookingState>(
+    return BlocConsumer<BookingCubit, BookingState>(
+      listener: (context, state) {
+        if (state is BookingSuccess) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return Dialog(
+                backgroundColor: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.all(16.0),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16.0),
+                      Text(
+                        'Please wait...',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+
+          Future.delayed(const Duration(seconds: 2), () {
+            Navigator.pop(context);
+            Navigator.pushReplacement(
+                context,
+                MaterialPageRoute(
+                    builder: (context) => MyTicket(
+                        auth: widget.auth,
+                        movie: widget.movie,
+                        booking: widget.booking,
+                        totalPrice: widget.totalPrice,
+                        selectSeat: widget.selectSeat,
+                        selectDate: widget.selectDate,
+                        selectTime: widget.selectTime)));
+          });
+        }
+      },
       builder: (context, state) {
         return WillPopScope(
           onWillPop: _onWillPop,
@@ -309,51 +353,21 @@ class _PaymentPageState extends State<PaymentPage> {
                             ),
                             GestureDetector(
                               onTap: () {
-                                showModalBottomSheet(
-                                    context: context,
-                                    builder: (BuildContext context) {
-                                      return BlocBuilder<VorcherCubit,
-                                          VorcherState>(
-                                        builder: (context, vorcherState) {
-                                          if(vorcherState is VorcherInitial){
-                                            return const Center(
-                                              child: Text("Danh sách voucher của bản trống"),
-                                            );
-                                          }else if(vorcherState is VorcherLoaded){
-                                            return Container(
-                                              height: 200,
-                                              decoration: const BoxDecoration(
-                                                  borderRadius: BorderRadius.only(
-                                                      topLeft:
-                                                      Radius.circular(20),
-                                                      topRight:
-                                                      Radius.circular(20)),
-                                                  color: Colors.white),
-                                              child: ListView.builder(
-                                                itemCount: vorcherState.vorcher.length,
-                                                itemBuilder: (context, index) {
-                                                  final voucher = vorcherState.vorcher[index];
-                                                  return ListTile(
-                                                    onTap: () {
-                                                      Navigator.pop(context);
-                                                    },
-                                                    leading: Image.asset(
-                                                        "assets/images/ticket.png"),
-                                                    title: Text(voucher.content??""),
-                                                    subtitle: Text(voucher.code??""),
-                                                  );
-                                                },
-                                              ),
-                                            );
-                                          }else{
-                                            return const Center(child: Text("Đã có lỗi xảy ra"),);
-                                          }
-                                        },
-                                      );
-                                    });
+                                Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                        builder: (context) => Voucher(
+                                              auth: widget.auth,
+                                              movie: widget.movie,
+                                              booking: widget.booking,
+                                              selectSeat: widget.selectSeat,
+                                              selectDate: widget.selectDate,
+                                              selectTime: widget.selectTime,
+                                              totalPrice: widget.totalPrice,
+                                            )));
                               },
-                              child: Row(
-                                children: const [
+                              child: const Row(
+                                children: [
                                   Text(
                                     "Chọn Voucher",
                                     style: TextStyle(color: Colors.blue),
@@ -383,7 +397,11 @@ class _PaymentPageState extends State<PaymentPage> {
                           ),
                         ),
                         Text(
-                          NumberFormat.currency(locale: 'vi-VN',symbol: 'đ',decimalDigits: 0,).format(widget.totalPrice),
+                          NumberFormat.currency(
+                            locale: 'vi-VN',
+                            symbol: 'đ',
+                            decimalDigits: 0,
+                          ).format(widget.totalPrice),
                           style: const TextStyle(
                             fontSize: 20,
                             fontWeight: FontWeight.bold,
@@ -460,47 +478,6 @@ class _PaymentPageState extends State<PaymentPage> {
                       context
                           .read<BookingCubit>()
                           .paymentBooking(bookingId, paymentMethod);
-                      if (state is BookingSuccess) {
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return Dialog(
-                              backgroundColor: Colors.transparent,
-                              child: Container(
-                                padding: const EdgeInsets.all(16.0),
-                                child: const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    CircularProgressIndicator(),
-                                    SizedBox(height: 16.0),
-                                    Text(
-                                      'Please wait...',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-
-                        Future.delayed(const Duration(seconds: 2), () {
-                          Navigator.pop(context);
-                          Navigator.pushReplacement(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (context) => MyTicket(
-                                      auth: widget.auth,
-                                      movie: widget.movie,
-                                      booking: widget.booking,
-                                      totalPrice: widget.totalPrice,
-                                      selectSeat: widget.selectSeat,
-                                      selectDate: widget.selectDate,
-                                      selectTime: widget.selectTime)));
-                        });
-                      }
                     } else {
                       // Hiển thị thông báo lựa chọn phương thức thanh toán
                     }

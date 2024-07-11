@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mbooking/blocs/auth/auth_cubit.dart';
 import 'package:mbooking/homescreen.dart';
+import 'package:mbooking/service/socket_service.dart';
 
 class Login extends StatelessWidget {
   const Login({super.key});
@@ -17,7 +18,6 @@ class Login extends StatelessWidget {
   }
 }
 
-
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
 
@@ -29,10 +29,49 @@ class _LoginPageState extends State<LoginPage> {
   TextEditingController email = TextEditingController();
   TextEditingController password = TextEditingController();
 
-
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<AuthCubit, AuthState>(
+    return BlocConsumer<AuthCubit, AuthState>(
+      listener: (context, state) {
+        if (state is AuthLoaded) {
+          // String userId = state.auth.id ?? "";
+          // SocketService socketService = SocketService();
+          // socketService.initalize(userId);
+          showDialog(
+            context: context,
+            builder: (context) {
+              return Dialog(
+                backgroundColor: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.all(16.0),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16.0),
+                      Text(
+                        'Please wait...',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+
+          Future.delayed(const Duration(seconds: 2), () {
+            Navigator.pop(context);
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (context) => Homescreen(auth: state.auth),
+              ),
+            );
+          });
+        }
+      },
       builder: (context, state) {
         return Scaffold(
           appBar: AppBar(
@@ -49,167 +88,124 @@ class _LoginPageState extends State<LoginPage> {
                 children: [
                   Container(
                     decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.all(
-                          Radius.circular(20.0)),
-                      // Loại bỏ góc bo tròn
-                      color: Colors.grey[200], // Màu nền mong muốn
+                      borderRadius: const BorderRadius.all(Radius.circular(20.0)),
+                      color: Colors.grey[200],
                     ),
-                    child:  TextField(
+                    child: TextField(
                       controller: email,
-                      style: const TextStyle(color: Colors.black), // Màu văn bản
+                      style: const TextStyle(color: Colors.black),
                       decoration: const InputDecoration(
                         hintText: 'Nhập số điện thoại',
                         hintStyle: TextStyle(color: Colors.grey),
-                        border: InputBorder.none, // Loại bỏ viền
-                        contentPadding:
-                        EdgeInsets.all(16), // Khoảng cách giữa nội dung và viền
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.all(16),
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   Container(
                     decoration: BoxDecoration(
-                      borderRadius: const BorderRadius.all(
-                          Radius.circular(20.0)),
-                      // Loại bỏ góc bo tròn
-                      color: Colors.grey[200], // Màu nền mong muốn
+                      borderRadius: const BorderRadius.all(Radius.circular(20.0)),
+                      color: Colors.grey[200],
                     ),
-                    child:  TextField(
+                    child: TextField(
                       controller: password,
-                      style: const TextStyle(color: Colors.black), // Màu văn bản
+                      style: const TextStyle(color: Colors.black),
                       decoration: const InputDecoration(
                         hintText: 'Nhập password',
                         hintStyle: TextStyle(color: Colors.grey),
-                        border: InputBorder.none, // Loại bỏ viền
-                        contentPadding:
-                        EdgeInsets.all(16), // Khoảng cách giữa nội dung và viền
+                        border: InputBorder.none,
+                        contentPadding: EdgeInsets.all(16),
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 30,
-                  ),
+                  const SizedBox(height: 30),
                   GestureDetector(
                     onTap: () {
                       context.read<AuthCubit>().login(email.text, password.text);
-                      if(state is AuthLoaded){
-                        print('username == ${state.auth?.username??""}');
-                        showDialog(
-                          context: context,
-                          builder: (context) {
-                            return Dialog(
-                              backgroundColor: Colors.transparent,
-                              child: Container(
-                                padding: const EdgeInsets.all(16.0),
-                                child: const Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    CircularProgressIndicator(),
-                                    SizedBox(height: 16.0),
-                                    Text(
-                                      'Please wait...',
-                                      style: TextStyle(
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            );
-                          },
-                        );
-
-                        Future.delayed(const Duration(seconds: 2),(){
-                          Navigator.pop(context);
-                          Navigator.of(context).push(
-                            MaterialPageRoute(
-                                builder: (context) =>   Homescreen(auth:state.auth)),
-                          );
-                        });
-                      }
                     },
                     child: Container(
                       width: double.infinity,
                       height: 60,
                       decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(30)),
-                          color: Color(0xfffcc434)),
+                        borderRadius: BorderRadius.all(Radius.circular(30)),
+                        color: Color(0xfffcc434),
+                      ),
                       child: const Center(
                         child: Text(
                           "Đăng nhập",
                           style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.black),
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black,
+                          ),
                         ),
                       ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   const Center(
                     child: Text(
                       "OR",
                       style: TextStyle(color: Colors.white),
                     ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {},
                     child: Container(
                       width: double.infinity,
                       height: 60,
                       decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(30)),
-                          color: Color(0xff191919)),
+                        borderRadius: BorderRadius.all(Radius.circular(30)),
+                        color: Color(0xff191919),
+                      ),
                       child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset("assets/images/fb.png"),
-                              const SizedBox(width: 10,),
-                              const Text(
-                                "Facebook",
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white),
-                              )
-                            ],
-                          )),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset("assets/images/fb.png"),
+                            const SizedBox(width: 10),
+                            const Text(
+                              "Facebook",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
-                  const SizedBox(
-                    height: 20,
-                  ),
+                  const SizedBox(height: 20),
                   GestureDetector(
                     onTap: () {},
                     child: Container(
                       width: double.infinity,
                       height: 60,
                       decoration: const BoxDecoration(
-                          borderRadius: BorderRadius.all(Radius.circular(30)),
-                          color: Color(0xff191919)),
+                        borderRadius: BorderRadius.all(Radius.circular(30)),
+                        color: Color(0xff191919),
+                      ),
                       child: Center(
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Image.asset("assets/images/gg.png"),
-                              const SizedBox(width: 10,),
-                              const Text(
-                                "Google",
-                                style: TextStyle(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.w500,
-                                    color: Colors.white),
-                              )
-                            ],
-                          )),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            Image.asset("assets/images/gg.png"),
+                            const SizedBox(width: 10),
+                            const Text(
+                              "Google",
+                              style: TextStyle(
+                                fontSize: 20,
+                                fontWeight: FontWeight.w500,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                     ),
                   ),
                 ],

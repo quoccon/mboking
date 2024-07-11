@@ -96,7 +96,7 @@ class _HomePageState extends State<HomePage> {
               BlocBuilder<MovieCubit, MovieState>(
                 builder: (context, state) {
                   if(state is MovieInitial){
-                    return Center(
+                    return const Center(
                       child: Text("Hiện chưa có bộ phim nào"),
                     );
                   }else if(state is MovieLoaded){

@@ -79,7 +79,75 @@ class _SelectSeatPageState extends State<SelectSeatPage> {
   Widget build(BuildContext context) {
     String userId = widget.auth.id ?? "";
     String movieId = widget.movie.id ?? "";
-    return BlocBuilder<BookingCubit, BookingState>(
+    return BlocConsumer<BookingCubit, BookingState>(
+      listener: (context, state) {
+        if (state is BookingInitial) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return Dialog(
+                backgroundColor: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.all(16.0),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16.0),
+                      Text(
+                        'Please wait...',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+        } else if (state is BookingSuccess) {
+          showDialog(
+            context: context,
+            builder: (context) {
+              return Dialog(
+                backgroundColor: Colors.transparent,
+                child: Container(
+                  padding: const EdgeInsets.all(16.0),
+                  child: const Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      CircularProgressIndicator(),
+                      SizedBox(height: 16.0),
+                      Text(
+                        'Please wait...',
+                        style: TextStyle(
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              );
+            },
+          );
+
+          Future.delayed(const Duration(seconds: 2), () {
+            Navigator.pop(context);
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                  builder: (context) => Payment(
+                      auth: widget.auth,
+                      movie: widget.movie,
+                      booking: state.booking,
+                      totalPrice:calculateTotalPrice(),
+                      selectSeat:getSelectedSeatName(),
+                      selectDate:selectedDate!,
+                      selectTime:selectedTime!)),
+            );
+          });
+        }
+      },
       builder: (context, state) {
         return Scaffold(
           backgroundColor: const Color(0xff1c1c1c),
@@ -93,21 +161,24 @@ class _SelectSeatPageState extends State<SelectSeatPage> {
                 Navigator.pop(context);
               },
             ),
-            title: const Text('Select seat'),
+            title: const Text('Chọn thông tin và vị trí ngồi'),
           ),
           body: Padding(
             padding: const EdgeInsets.all(16.0),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  "Select your seat",
-                  style: TextStyle(
-                      color: Colors.white,
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold),
-                ),
-                const SizedBox(height: 10),
+                 const Center(
+                   child: Text(
+                    "Màn hình",
+                    textAlign: TextAlign.center,
+                    style: TextStyle(
+                        color: Colors.white,
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold),
+                                   ),
+                 ),
+                const SizedBox(height: 20),
                 ClipPath(
                   clipper: CurvedClipper(),
                   child: Container(
@@ -126,7 +197,7 @@ class _SelectSeatPageState extends State<SelectSeatPage> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 20),
+                const SizedBox(height: 50),
                 Expanded(
                   child: GridView.builder(
                     physics: const NeverScrollableScrollPhysics(),
@@ -280,7 +351,7 @@ class _SelectSeatPageState extends State<SelectSeatPage> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         const Text(
-                          'Total:',
+                          'Tổng tiền:',
                           style: TextStyle(
                             color: Colors.amber,
                             fontSize: 18,
@@ -288,7 +359,7 @@ class _SelectSeatPageState extends State<SelectSeatPage> {
                           ),
                         ),
                         Text(
-                          '${calculateTotalPrice()} VND',
+                          NumberFormat.currency(locale: 'vi-VN',symbol: 'đ',decimalDigits: 0).format(calculateTotalPrice()),
                           // Calculated total price
                           style: const TextStyle(
                             color: Colors.amber,
@@ -309,72 +380,6 @@ class _SelectSeatPageState extends State<SelectSeatPage> {
                         context
                             .read<BookingCubit>()
                             .addBooking(userId, movieId, calculateTotalPrice(),selectedSeats,widget.cinemaId??"",selectedDate!,selectedTime!);
-                        if (state is BookingInitial) {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return Dialog(
-                                backgroundColor: Colors.transparent,
-                                child: Container(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: const Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      CircularProgressIndicator(),
-                                      SizedBox(height: 16.0),
-                                      Text(
-                                        'Please wait...',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        } else if (state is BookingSuccess) {
-                          showDialog(
-                            context: context,
-                            builder: (context) {
-                              return Dialog(
-                                backgroundColor: Colors.transparent,
-                                child: Container(
-                                  padding: const EdgeInsets.all(16.0),
-                                  child: const Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      CircularProgressIndicator(),
-                                      SizedBox(height: 16.0),
-                                      Text(
-                                        'Please wait...',
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-
-                          Future.delayed(const Duration(seconds: 2), () {
-                            Navigator.pop(context);
-                            Navigator.of(context).push(
-                              MaterialPageRoute(
-                                  builder: (context) => Payment(
-                                      auth: widget.auth,
-                                      movie: widget.movie,
-                                      booking: state.booking,
-                                      totalPrice:calculateTotalPrice(),
-                                      selectSeat:getSelectedSeatName(),
-                                      selectDate:selectedDate!,
-                                      selectTime:selectedTime!)),
-                            );
-                          });
-                        }
                       },
                       child: const Text('Buy ticket',
                           style: TextStyle(color: Colors.white)),

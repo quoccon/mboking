@@ -218,17 +218,17 @@ class _MyTicketState extends State<MyTicket> {
                       //Chi tiết thanh toán
                        Row(
                         children: [
-                          Icon(
+                          const Icon(
                             Icons.monetization_on_outlined,
                             color: Colors.black,
                             size: 20,
                           ),
-                          SizedBox(
+                          const SizedBox(
                             width: 10,
                           ),
                           Text(
-                            widget.totalPrice.toString(),
-                            style: TextStyle(
+                            NumberFormat.currency(locale: 'vi-VN',symbol: 'đ',decimalDigits: 0).format(widget.totalPrice),
+                            style: const TextStyle(
                                 color: Colors.black,
                                 fontSize: 18,
                                 fontWeight: FontWeight.w500),
